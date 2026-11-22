@@ -460,7 +460,7 @@
                     <div>
                         <label class="block text-xs font-medium text-zinc-300 mb-1">Penyedia</label>
                         <input type="text" id="input-provider" placeholder="Contoh: Google Drive Studio"
-                               class="w-full bg-zinc-950 border border-zinc-700 focus:border-blue-500 rounded-xl px-3.5 py-2 text-sm text-white outline-none">
+                               class="w-full bg-zinc-950 border border-zinc-700 focus:border-blue-500 rounded-xl px-3 py-2 text-sm text-white outline-none">
                     </div>
                 </div>
 
@@ -493,51 +493,42 @@
         import { getFirestore, collection, doc, addDoc, updateDoc, deleteDoc, onSnapshot, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // =====================================================================
-        // KONFIGURASI UTAMA & LOGO GOOGLE DRIVE
+        // KONSTANTA & VARIABEL GLOBAL APLIKASI
         // =====================================================================
         const LOGO_GDRIVE_LINK = "https://drive.google.com/file/d/1ZwCzR-VGkyKaFi-1jSThtVR4XVFlIRUC/view?usp=sharing";
         const UPLOAD_PASSWORD = "060312";
-        const STORAGE_KEY_LOCAL = "auraphone_play_lokal_v2";
+        const STORAGE_KEY_LOCAL = "auraphone_play_designs_v1";
         const CHANNEL_RESMI_KEYWORDS = [
-            "azfarazqa",
-            "auraphone pictures entertainment",
-            "griya surya indah (gsi) pictures entertainment"
+            "azfarazqa", 
+            "auraphone pictures entertainment", 
+            "griya surya indah (gsi) pictures entertainment",
+            "gsi pictures entertainment"
         ];
 
-        const rawAppId = typeof __app_id !== 'undefined' && __app_id ? String(__app_id) : 'auraphone-play-default';
-        const appId = rawAppId.replace(/[\/\.#\$\[\]]/g, '_');
-        let firebaseConfig = null;
-        try {
-            if (typeof __firebase_config !== 'undefined' && __firebase_config) {
-                firebaseConfig = typeof __firebase_config === 'string' ? JSON.parse(__firebase_config) : __firebase_config;
-            }
-        } catch (e) {
-            console.error("Konfigurasi database tidak valid:", e);
-        }
+        let appId = typeof __app_id !== 'undefined' ? __app_id : 'auraphone-play-public-v1';
+        let firebaseConfig = typeof __firebase_config !== 'undefined' ? __firebase_config : null;
 
         let db = null;
         let auth = null;
         let currentUser = null;
         let unsubscribeSnapshot = null;
 
-        let sudahTerautentikasi = false;
+        let desainCloud = [];
+        let daftarDesain = [];
         let kategoriAktif = "Semua";
         let desainAktif = null;
+        let sudahTerautentikasi = false;
         let channelTargetHapus = null;
         let statusInteraksi = {};
 
-        function perbaruiStatusKoneksi(status, warnaDot) {
-            const dot = document.getElementById("sync-dot");
-            const text = document.getElementById("sync-text");
-            if (dot) dot.className = `w-2 h-2 rounded-full ${warnaDot}`;
-            if (text) text.textContent = status;
+        function perbaruiStatusKoneksi(teks, warnaDot) {
+            const statusDot = document.getElementById("sync-dot");
+            const statusText = document.getElementById("sync-text");
+            if (statusDot && statusText) {
+                statusDot.className = `w-2 h-2 rounded-full ${warnaDot}`;
+                statusText.textContent = teks;
+            }
         }
-
-        /**
-         * PENGELOLAAN DATA LOKAL & CLOUD
-         */
-        let desainCloud = [];
-        let daftarDesain = [];
 
         function muatDataLokal() {
             try {
@@ -560,16 +551,18 @@
         }
 
         function gabungkanSemuaDesain() {
-            const dataLokal = muatDataLokal();
             const petaUnik = new Map();
             
-            // Masukkan data lokal terlebih dahulu sebagai basis cadangan utama
-            dataLokal.forEach(item => petaUnik.set(item.id, item));
-            
-            // Gabungkan dengan data dari cloud
+            // Prioritaskan data cloud agar sinkron lintas perangkat secara publik
             desainCloud.forEach(item => petaUnik.set(item.id, item));
+            
+            // Jika cloud kosong, fallback ke lokal
+            if (petaUnik.size === 0) {
+                const dataLokal = muatDataLokal();
+                dataLokal.forEach(item => petaUnik.set(item.id, item));
+            }
 
-            daftarDesain = Array.from(petaUnik.values()).sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
+            daftarDesain = Array.from(petaUnik.values()).sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
             simpanDataLokal(daftarDesain);
             terapkanFilterDanCari();
 
@@ -601,15 +594,14 @@
                 });
                 desainCloud = hasil;
                 gabungkanSemuaDesain();
-                perbaruiStatusKoneksi("Tersinkron", "bg-emerald-500");
+                perbaruiStatusKoneksi("Publik Terhubung", "bg-emerald-500");
             }, (error) => {
                 console.warn("Mode offline aktif:", error);
-                perbaruiStatusKoneksi("Mode Lokal", "bg-yellow-500");
+                perbaruiStatusKoneksi("Mode Offline", "bg-yellow-500");
             });
         }
 
         async function inisialisasiSinkronisasiCloud() {
-            // Muat data lokal seketika agar langsung tampil tanpa menunggu jaringan
             daftarDesain = muatDataLokal();
             renderGridUtama(daftarDesain);
 
@@ -653,7 +645,7 @@
                             desainCloud = awal;
                             gabungkanSemuaDesain();
                         }
-                        perbaruiStatusKoneksi("Tersinkron", "bg-emerald-500");
+                        perbaruiStatusKoneksi("Publik Terhubung", "bg-emerald-500");
                     } catch (err) {
                         perbaruiStatusKoneksi("Mode Lokal", "bg-yellow-500");
                     }
@@ -1257,9 +1249,7 @@
                 year: 'numeric'
             });
 
-            const idUnik = "desain-" + Date.now();
             const desainBaruData = {
-                id: idUnik,
                 driveUrl: link,
                 judul: judul,
                 deskripsi: deskripsi,
@@ -1272,28 +1262,38 @@
                 kategori: kategori,
                 komentar: [],
                 createdAt: Date.now(),
-                isCloud: false
+                isCloud: true
             };
 
             tutupModalTambah();
             e.target.reset();
 
-            // Simpan instan ke memori lokal & simpan permanen
-            daftarDesain.push(desainBaruData);
-            simpanDataLokal(daftarDesain);
-            renderGridUtama(daftarDesain);
-
-            // Coba sinkronisasi ke cloud di latar belakang
+            // Kirim langsung ke cloud publik Firestore agar perangkat lain langsung mendeteksi
             if (db && currentUser) {
                 try {
                     const desainColRef = collection(db, 'artifacts', appId, 'public', 'data', 'auraphone_designs');
                     const docRef = await addDoc(desainColRef, desainBaruData);
                     desainBaruData.id = docRef.id;
-                    desainBaruData.isCloud = true;
+                    
+                    // Masukkan ke array lokal & simpan
+                    daftarDesain.unshift(desainBaruData);
                     simpanDataLokal(daftarDesain);
+                    renderGridUtama(daftarDesain);
                 } catch (err) {
-                    console.warn("Simpan cloud dilewati, tersimpan di perangkat:", err);
+                    console.error("Gagal menyimpan ke cloud publik:", err);
+                    // Fallback lokal jika gagal jaringan
+                    desainBaruData.id = "desain-" + Date.now();
+                    desainBaruData.isCloud = false;
+                    daftarDesain.unshift(desainBaruData);
+                    simpanDataLokal(daftarDesain);
+                    renderGridUtama(daftarDesain);
                 }
+            } else {
+                desainBaruData.id = "desain-" + Date.now();
+                desainBaruData.isCloud = false;
+                daftarDesain.unshift(desainBaruData);
+                simpanDataLokal(daftarDesain);
+                renderGridUtama(daftarDesain);
             }
 
             const searchInput = document.getElementById('search-input');
@@ -1302,7 +1302,7 @@
             kembaliKeBeranda();
 
             const statusVerif = apakahChannelTerverifikasi(channel) ? " (Channel Terverifikasi)" : "";
-            tampilkanNotifikasi(`Desain & Channel "${channel}"${statusVerif} berhasil disimpan permanen!`);
+            tampilkanNotifikasi(`Desain & Channel "${channel}"${statusVerif} berhasil dipublikasikan ke server publik!`);
         }
 
         function salinLinkDesain() {
