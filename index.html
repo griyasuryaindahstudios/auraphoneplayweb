@@ -116,8 +116,8 @@
             <!-- Kanan: Tombol Tambah Cepat & Info Jumlah Desain -->
             <div class="flex items-center gap-2.5 order-2 md:order-3">
                 <span id="sync-status-badge" class="inline-flex items-center gap-1.5 text-[11px] font-medium bg-zinc-900 text-zinc-400 px-3 py-2 rounded-full border border-zinc-800" title="Status Koneksi Penyimpanan">
-                    <span id="sync-dot" class="w-2 h-2 rounded-full bg-yellow-500 animate-pulse"></span>
-                    <span id="sync-text">Menghubungkan...</span>
+                    <span id="sync-dot" class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                    <span id="sync-text">Siap</span>
                 </span>
                 <span id="total-desain-badge" class="hidden sm:inline-flex items-center gap-1.5 text-xs font-medium bg-zinc-800/90 text-zinc-300 px-3 py-2 rounded-full border border-zinc-700/60">
                     <i data-lucide="image" class="w-3.5 h-3.5 text-blue-400"></i>
@@ -346,7 +346,7 @@
 
             <form onsubmit="konfirmasiHapusChannel(event)" class="mt-4 space-y-4">
                 <p class="text-xs text-zinc-300 leading-relaxed">
-                    Anda akan menghapus channel <strong id="target-delete-channel-name" class="text-white">-</strong> beserta seluruh desain di dalamnya secara permanen dari semua perangkat.
+                    Anda akan menghapus channel <strong id="target-delete-channel-name" class="text-white">-</strong> beserta seluruh desain di dalamnya secara permanen dari perangkat ini.
                 </p>
                 <div>
                     <label class="block text-xs font-medium text-zinc-300 mb-1.5">Masukkan Password Konfirmasi *</label>
@@ -460,7 +460,7 @@
                     <div>
                         <label class="block text-xs font-medium text-zinc-300 mb-1">Penyedia</label>
                         <input type="text" id="input-provider" placeholder="Contoh: Google Drive Studio"
-                               class="w-full bg-zinc-950 border border-zinc-700 focus:border-blue-500 rounded-xl px-3 py-2 text-sm text-white outline-none">
+                               class="w-full bg-zinc-950 border border-zinc-700 focus:border-blue-500 rounded-xl px-3.5 py-2 text-sm text-white outline-none">
                     </div>
                 </div>
 
@@ -485,7 +485,7 @@
     </div>
 
     <!-- =====================================================================
-         5. JAVASCRIPT & PENYIMPANAN CLOUD REAL-TIME LINTAS PERANGKAT
+         5. JAVASCRIPT & SISTEM PENYIMPANAN GANDA (CLOUD + LOCALSTORAGE)
          ===================================================================== -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
@@ -497,13 +497,13 @@
         // =====================================================================
         const LOGO_GDRIVE_LINK = "https://drive.google.com/file/d/1ZwCzR-VGkyKaFi-1jSThtVR4XVFlIRUC/view?usp=sharing";
         const UPLOAD_PASSWORD = "060312";
+        const STORAGE_KEY_LOCAL = "auraphone_play_lokal_v2";
         const CHANNEL_RESMI_KEYWORDS = [
             "azfarazqa",
             "auraphone pictures entertainment",
             "griya surya indah (gsi) pictures entertainment"
         ];
 
-        // Inisialisasi Cloud Storage Lintas Perangkat
         const rawAppId = typeof __app_id !== 'undefined' && __app_id ? String(__app_id) : 'auraphone-play-default';
         const appId = rawAppId.replace(/[\/\.#\$\[\]]/g, '_');
         let firebaseConfig = null;
@@ -518,44 +518,61 @@
         let db = null;
         let auth = null;
         let currentUser = null;
-        let authReadyPromise = null;
         let unsubscribeSnapshot = null;
 
         let sudahTerautentikasi = false;
         let kategoriAktif = "Semua";
         let desainAktif = null;
         let channelTargetHapus = null;
-        let statusInteraksi = {}; // Menyimpan status like/dislike sesi ini per ID desain
+        let statusInteraksi = {};
 
         function perbaruiStatusKoneksi(status, warnaDot) {
             const dot = document.getElementById("sync-dot");
             const text = document.getElementById("sync-text");
-            if (dot) {
-                dot.className = `w-2 h-2 rounded-full ${warnaDot}`;
-            }
-            if (text) {
-                text.textContent = status;
-            }
+            if (dot) dot.className = `w-2 h-2 rounded-full ${warnaDot}`;
+            if (text) text.textContent = status;
         }
 
         /**
-         * =====================================================================
-         * DATABASE DESAIN (TERHUBUNG CLOUD + BISA COPY-PASTE MANUAL DI SINI)
-         * =====================================================================
+         * PENGELOLAAN DATA LOKAL & CLOUD
          */
-        const desainStatisKode = [];
         let desainCloud = [];
-        let daftarDesain = [...desainStatisKode];
+        let daftarDesain = [];
+
+        function muatDataLokal() {
+            try {
+                const dataRaw = localStorage.getItem(STORAGE_KEY_LOCAL);
+                if (dataRaw) {
+                    return JSON.parse(dataRaw);
+                }
+            } catch (e) {
+                console.error("Gagal memuat localStorage:", e);
+            }
+            return [];
+        }
+
+        function simpanDataLokal(data) {
+            try {
+                localStorage.setItem(STORAGE_KEY_LOCAL, JSON.stringify(data));
+            } catch (e) {
+                console.error("Gagal menyimpan ke localStorage:", e);
+            }
+        }
 
         function gabungkanSemuaDesain() {
+            const dataLokal = muatDataLokal();
             const petaUnik = new Map();
-            [...desainStatisKode, ...desainCloud].forEach(item => {
-                petaUnik.set(item.id, item);
-            });
+            
+            // Masukkan data lokal terlebih dahulu sebagai basis cadangan utama
+            dataLokal.forEach(item => petaUnik.set(item.id, item));
+            
+            // Gabungkan dengan data dari cloud
+            desainCloud.forEach(item => petaUnik.set(item.id, item));
+
             daftarDesain = Array.from(petaUnik.values()).sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
+            simpanDataLokal(daftarDesain);
             terapkanFilterDanCari();
 
-            // Jika sedang membuka halaman detail, perbarui data real-time-nya
             if (desainAktif) {
                 const pembaruan = daftarDesain.find(d => d.id === desainAktif.id);
                 if (pembaruan) {
@@ -570,9 +587,7 @@
 
         function pasangPendengarDataCloud() {
             if (!db || !currentUser) return;
-            if (unsubscribeSnapshot) {
-                unsubscribeSnapshot();
-            }
+            if (unsubscribeSnapshot) unsubscribeSnapshot();
 
             const desainColRef = collection(db, 'artifacts', appId, 'public', 'data', 'auraphone_designs');
             unsubscribeSnapshot = onSnapshot(desainColRef, (snapshot) => {
@@ -588,74 +603,68 @@
                 gabungkanSemuaDesain();
                 perbaruiStatusKoneksi("Tersinkron", "bg-emerald-500");
             }, (error) => {
-                console.warn("Sinkronisasi real-time dibatasi izin, beralih ke mode lokal:", error);
+                console.warn("Mode offline aktif:", error);
                 perbaruiStatusKoneksi("Mode Lokal", "bg-yellow-500");
             });
         }
 
-        function inisialisasiSinkronisasiCloud() {
+        async function inisialisasiSinkronisasiCloud() {
+            // Muat data lokal seketika agar langsung tampil tanpa menunggu jaringan
+            daftarDesain = muatDataLokal();
+            renderGridUtama(daftarDesain);
+
             if (!firebaseConfig) {
-                perbaruiStatusKoneksi("Mode Lokal", "bg-zinc-500");
-                return Promise.resolve(null);
+                perbaruiStatusKoneksi("Mode Lokal", "bg-blue-500");
+                return;
             }
 
-            if (authReadyPromise) return authReadyPromise;
+            try {
+                const app = initializeApp(firebaseConfig);
+                auth = getAuth(app);
+                db = getFirestore(app);
 
-            authReadyPromise = (async () => {
-                try {
-                    const app = initializeApp(firebaseConfig);
-                    auth = getAuth(app);
-                    db = getFirestore(app);
-
-                    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                        try {
-                            const cred = await signInWithCustomToken(auth, __initial_auth_token);
-                            currentUser = cred.user;
-                        } catch (e) {
-                            const cred = await signInAnonymously(auth);
-                            currentUser = cred.user;
-                        }
-                    } else {
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    try {
+                        const cred = await signInWithCustomToken(auth, __initial_auth_token);
+                        currentUser = cred.user;
+                    } catch (e) {
                         const cred = await signInAnonymously(auth);
                         currentUser = cred.user;
                     }
-
-                    if (currentUser) {
-                        pasangPendengarDataCloud();
-                        try {
-                            const desainColRef = collection(db, 'artifacts', appId, 'public', 'data', 'auraphone_designs');
-                            const initialSnap = await getDocs(desainColRef);
-                            const awal = [];
-                            initialSnap.forEach((docSnap) => {
-                                awal.push({
-                                    id: docSnap.id,
-                                    isCloud: true,
-                                    ...docSnap.data()
-                                });
-                            });
-                            if (awal.length > 0) {
-                                desainCloud = awal;
-                                gabungkanSemuaDesain();
-                            }
-                            perbaruiStatusKoneksi("Tersinkron", "bg-emerald-500");
-                        } catch (err) {
-                            console.warn("Akses Firestore terbatas, menggunakan mode penyimpanan sesi lokal:", err);
-                            perbaruiStatusKoneksi("Mode Sesi", "bg-yellow-500");
-                        }
-                    }
-                    return currentUser;
-                } catch (err) {
-                    console.warn("Autentikasi cloud dilewati, menggunakan penyimpanan lokal:", err);
-                    perbaruiStatusKoneksi("Mode Lokal", "bg-zinc-500");
-                    return null;
+                } else {
+                    const cred = await signInAnonymously(auth);
+                    currentUser = cred.user;
                 }
-            })();
 
-            return authReadyPromise;
+                if (currentUser) {
+                    pasangPendengarDataCloud();
+                    try {
+                        const desainColRef = collection(db, 'artifacts', appId, 'public', 'data', 'auraphone_designs');
+                        const initialSnap = await getDocs(desainColRef);
+                        const awal = [];
+                        initialSnap.forEach((docSnap) => {
+                            awal.push({
+                                id: docSnap.id,
+                                isCloud: true,
+                                ...docSnap.data()
+                            });
+                        });
+                        if (awal.length > 0) {
+                            desainCloud = awal;
+                            gabungkanSemuaDesain();
+                        }
+                        perbaruiStatusKoneksi("Tersinkron", "bg-emerald-500");
+                    } catch (err) {
+                        perbaruiStatusKoneksi("Mode Lokal", "bg-yellow-500");
+                    }
+                }
+            } catch (err) {
+                perbaruiStatusKoneksi("Mode Lokal", "bg-blue-500");
+            }
         }
 
         /**
-         * KONVERSI LINK GOOGLE DRIVE MENJADI URL GAMBAR RESOLUSI TINGGI
+         * KONVERSI LINK GOOGLE DRIVE
          */
         function ekstrakIdGoogleDrive(url) {
             if (!url) return null;
@@ -677,9 +686,6 @@
             return `https://drive.google.com/thumbnail?id=${fileId}&sz=${ukuran}`;
         }
 
-        /**
-         * MENDAPATKAN AVATAR CHANNEL (FOTO PROFIL GDRIVE ATAU INISIAL)
-         */
         function dapatkanAvatarChannel(namaChannel, avatarUrlLangsung = "") {
             if (avatarUrlLangsung && avatarUrlLangsung.trim()) {
                 return avatarUrlLangsung.trim();
@@ -690,7 +696,7 @@
             return desainDenganAvatar ? desainDenganAvatar.channelAvatarUrl : "";
         }
 
-        function buatHtmlAvatarChannel(namaChannel, avatarUrlLangsung = "", ukuranKelas = "w-9 h-9 text-xs") {
+        function buatHtmlAvatarChannel(namaChannel, avatarUrlLangsung = "") {
             const inisial = (namaChannel || "A").charAt(0).toUpperCase();
             const rawAvatar = dapatkanAvatarChannel(namaChannel, avatarUrlLangsung);
             if (rawAvatar) {
@@ -700,9 +706,6 @@
             return `<span>${inisial}</span>`;
         }
 
-        /**
-         * CEK STATUS VERIFIKASI CHANNEL RESMI
-         */
         function apakahChannelTerverifikasi(namaChannel) {
             if (!namaChannel) return false;
             const namaLower = namaChannel.toLowerCase();
@@ -721,7 +724,7 @@
         }
 
         /**
-         * MENU KLIK KANAN KHUSUS CHANNEL -> "Hapus Channel"
+         * KLIK KANAN HAPUS CHANNEL
          */
         function tampilkanMenuKlikKananChannel(e, namaChannel) {
             e.preventDefault();
@@ -784,21 +787,22 @@
             const targetNama = channelTargetHapus;
             tutupModalHapusChannel();
 
-            await inisialisasiSinkronisasiCloud();
-
-            const desainMilikChannel = desainCloud.filter(d => d.desainer === targetNama);
-            if (db && currentUser && desainMilikChannel.length > 0) {
+            const desainMilikChannel = daftarDesain.filter(d => d.desainer === targetNama);
+            if (db && currentUser) {
                 try {
                     for (const item of desainMilikChannel) {
-                        const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'auraphone_designs', item.id);
-                        await deleteDoc(docRef);
+                        if (item.isCloud && item.id) {
+                            const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'auraphone_designs', item.id);
+                            await deleteDoc(docRef);
+                        }
                     }
                 } catch (err) {
-                    console.warn("Penghapusan cloud dibatasi izin:", err);
+                    console.warn("Penghapusan cloud terbatas:", err);
                 }
             }
 
-            desainCloud = desainCloud.filter(d => d.desainer !== targetNama);
+            daftarDesain = daftarDesain.filter(d => d.desainer !== targetNama);
+            simpanDataLokal(daftarDesain);
             gabungkanSemuaDesain();
 
             if (desainAktif && desainAktif.desainer === targetNama) {
@@ -810,7 +814,7 @@
         }
 
         /**
-         * INISIALISASI SPLASH SCREEN & HALAMAN AWAL
+         * INISIALISASI HALAMAN
          */
         window.addEventListener("DOMContentLoaded", () => {
             const logoUrl = dapatkanUrlGambarGDrive(LOGO_GDRIVE_LINK, "w500");
@@ -821,7 +825,12 @@
             if (navbarImg) navbarImg.src = logoUrl;
 
             lucide.createIcons();
+            
+            // Muat data seketika
+            daftarDesain = muatDataLokal();
             renderGridUtama(daftarDesain);
+
+            // Inisialisasi cloud di latar belakang
             inisialisasiSinkronisasiCloud();
 
             setTimeout(() => {
@@ -835,15 +844,12 @@
             }, 1800);
         });
 
-        /**
-         * RENDER GRID UTAMA (MAKSIMAL 5 KE PINGGIR)
-         */
         function renderGridUtama(data) {
             const grid = document.getElementById("design-grid");
             const emptyState = document.getElementById("empty-state");
             const countNumber = document.getElementById("count-number");
 
-            if (countNumber) countNumber.textContent = daftarDesain.length;
+            if (countNumber) countNumber.textContent = data.length;
             grid.innerHTML = "";
 
             if (!data || data.length === 0) {
@@ -907,9 +913,6 @@
             lucide.createIcons();
         }
 
-        /**
-         * HALAMAN DETAIL PRATINJAU DESAIN
-         */
         function bukaDetailDesain(id) {
             const desain = daftarDesain.find(d => d.id === id);
             if (!desain) return;
@@ -934,16 +937,11 @@
             const avatarContainer = document.getElementById("detail-avatar-container");
             avatarContainer.innerHTML = buatHtmlAvatarChannel(desain.desainer, desain.channelAvatarUrl);
             avatarContainer.oncontextmenu = (e) => tampilkanMenuKlikKananChannel(e, desain.desainer);
-            avatarContainer.title = "Klik kanan pada Channel untuk opsi Hapus Channel";
-            avatarContainer.classList.add("cursor-context-menu");
 
             designerTopEl.innerHTML = `<span>${desain.desainer}</span> ${badgeVerif}`;
             designerTopEl.oncontextmenu = (e) => tampilkanMenuKlikKananChannel(e, desain.desainer);
-            designerTopEl.title = "Klik kanan pada Channel untuk opsi Hapus Channel";
-            designerTopEl.classList.add("cursor-context-menu");
 
             document.getElementById("detail-provider-top").textContent = `Penyedia: ${desain.penyedia}`;
-
             document.getElementById("detail-description").textContent = desain.deskripsi;
             document.getElementById("meta-designer").innerHTML = `<span>${desain.desainer}</span> ${badgeVerif}`;
             document.getElementById("meta-date").textContent = desain.tanggalUpload;
@@ -970,20 +968,19 @@
             }
         }
 
-        /**
-         * SISTEM LIKE & DISLIKE
-         */
-        async function simpanPerubahanDesainCloud(desain) {
-            if (!db || !currentUser || !desain.isCloud) return;
-            try {
-                const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'auraphone_designs', desain.id);
-                await updateDoc(docRef, {
-                    likes: desain.likes,
-                    dislikes: desain.dislikes,
-                    komentar: desain.komentar || []
-                });
-            } catch (err) {
-                console.warn("Pembaruan interaksi cloud dibatasi izin:", err);
+        async function simpanPerubahanDesain() {
+            simpanDataLokal(daftarDesain);
+            if (db && currentUser && desainAktif && desainAktif.isCloud && desainAktif.id) {
+                try {
+                    const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'auraphone_designs', desainAktif.id);
+                    await updateDoc(docRef, {
+                        likes: desainAktif.likes,
+                        dislikes: desainAktif.dislikes,
+                        komentar: desainAktif.komentar || []
+                    });
+                } catch (err) {
+                    console.warn("Cloud update dibatasi:", err);
+                }
             }
         }
 
@@ -1002,7 +999,7 @@
                 statusInteraksi[desainAktif.id] = "like";
             }
             perbaruiTampilanLikeDislike();
-            simpanPerubahanDesainCloud(desainAktif);
+            simpanPerubahanDesain();
         }
 
         function aksiDislike() {
@@ -1020,7 +1017,7 @@
                 statusInteraksi[desainAktif.id] = "dislike";
             }
             perbaruiTampilanLikeDislike();
-            simpanPerubahanDesainCloud(desainAktif);
+            simpanPerubahanDesain();
         }
 
         function perbaruiTampilanLikeDislike() {
@@ -1039,9 +1036,6 @@
             btnDislike.classList.toggle("bg-red-500/10", state === "dislike");
         }
 
-        /**
-         * SISTEM KOMENTAR
-         */
         async function kirimKomentar(e) {
             e.preventDefault();
             if (!desainAktif) return;
@@ -1062,7 +1056,7 @@
 
             teksInput.value = "";
             renderKomentar();
-            await simpanPerubahanDesainCloud(desainAktif);
+            await simpanPerubahanDesain();
             tampilkanNotifikasi("Komentar berhasil disimpan!");
         }
 
@@ -1099,9 +1093,6 @@
             });
         }
 
-        /**
-         * ALGORITMA REKOMENDASI OTOMATIS (FISHER-YATES SHUFFLE)
-         */
         function renderRekomendasiOtomatis(idSedangDibuka) {
             const container = document.getElementById("recommendations-grid");
             container.innerHTML = "";
@@ -1149,9 +1140,6 @@
             });
         }
 
-        /**
-         * FILTER KATEGORI & PENCARIAN
-         */
         function kembaliKeBeranda() {
             document.getElementById('detail-view').classList.add('hidden');
             document.getElementById('home-view').classList.remove('hidden');
@@ -1190,9 +1178,6 @@
             renderGridUtama(hasil);
         }
 
-        /**
-         * KEAMANAN PASSWORD & MODAL UPLOAD LINK GOOGLE DRIVE + CHANNEL
-         */
         function bukaModalPassword() {
             if (sudahTerautentikasi) {
                 bukaModalTambah();
@@ -1272,7 +1257,9 @@
                 year: 'numeric'
             });
 
+            const idUnik = "desain-" + Date.now();
             const desainBaruData = {
+                id: idUnik,
                 driveUrl: link,
                 judul: judul,
                 deskripsi: deskripsi,
@@ -1284,50 +1271,40 @@
                 penyedia: penyedia,
                 kategori: kategori,
                 komentar: [],
-                createdAt: Date.now()
+                createdAt: Date.now(),
+                isCloud: false
             };
 
             tutupModalTambah();
             e.target.reset();
 
-            perbaruiStatusKoneksi("Menyimpan...", "bg-blue-500 animate-ping");
-            await inisialisasiSinkronisasiCloud();
+            // Simpan instan ke memori lokal & simpan permanen
+            daftarDesain.push(desainBaruData);
+            simpanDataLokal(daftarDesain);
+            renderGridUtama(daftarDesain);
 
-            let berhasilKeCloud = false;
+            // Coba sinkronisasi ke cloud di latar belakang
             if (db && currentUser) {
                 try {
                     const desainColRef = collection(db, 'artifacts', appId, 'public', 'data', 'auraphone_designs');
                     const docRef = await addDoc(desainColRef, desainBaruData);
-                    berhasilKeCloud = true;
-                    perbaruiStatusKoneksi("Tersinkron", "bg-emerald-500");
-
-                    if (!desainCloud.some(d => d.id === docRef.id)) {
-                        desainCloud.push({ id: docRef.id, isCloud: true, ...desainBaruData });
-                        gabungkanSemuaDesain();
-                    }
+                    desainBaruData.id = docRef.id;
+                    desainBaruData.isCloud = true;
+                    simpanDataLokal(daftarDesain);
                 } catch (err) {
-                    console.warn("Penyimpanan cloud dibatasi izin, menyimpan ke sesi lokal:", err);
-                    perbaruiStatusKoneksi("Mode Lokal", "bg-yellow-500");
+                    console.warn("Simpan cloud dilewati, tersimpan di perangkat:", err);
                 }
             }
 
-            if (!berhasilKeCloud) {
-                desainCloud.push({ id: "local-" + Date.now(), isCloud: false, ...desainBaruData });
-                gabungkanSemuaDesain();
-            }
-            
             const searchInput = document.getElementById('search-input');
             if (searchInput) searchInput.value = '';
             filterKategori('Semua');
             kembaliKeBeranda();
 
             const statusVerif = apakahChannelTerverifikasi(channel) ? " (Channel Terverifikasi)" : "";
-            tampilkanNotifikasi(`Desain & Channel "${channel}"${statusVerif} berhasil ditambahkan!`);
+            tampilkanNotifikasi(`Desain & Channel "${channel}"${statusVerif} berhasil disimpan permanen!`);
         }
 
-        /**
-         * UTILITAS: SALIN LINK & NOTIFIKASI TOAST
-         */
         function salinLinkDesain() {
             if (!desainAktif) return;
             const dummyInput = document.createElement('input');
@@ -1348,7 +1325,6 @@
             }, 3000);
         }
 
-        // Ekspos fungsi ke window agar event handler inline HTML selalu terhubung
         window.kembaliKeBeranda = kembaliKeBeranda;
         window.filterKategori = filterKategori;
         window.cariDesain = cariDesain;
