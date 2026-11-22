@@ -1,0 +1,1303 @@
+<!DOCTYPE html>
+<html lang="id" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auraphone Play - Pratinjau Desain</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f0f0f;
+            color: #f1f1f1;
+            overflow-x: hidden;
+        }
+
+        /* Animasi Splash Screen */
+        @keyframes pulseGlow {
+            0%, 100% { transform: scale(1); box-shadow: 0 0 25px rgba(59, 130, 246, 0.5); }
+            50% { transform: scale(1.05); box-shadow: 0 0 45px rgba(139, 92, 246, 0.8); }
+        }
+
+        .logo-splash {
+            animation: pulseGlow 2s infinite ease-in-out;
+        }
+
+        /* Custom Scrollbar ala YouTube Dark */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f0f0f;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #3f3f3f;
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
+        /* Line Clamp untuk Judul */
+        .line-clamp-2 {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body class="antialiased selection:bg-blue-600 selection:text-white">
+
+    <!-- =====================================================================
+         1. SPLASH SCREEN (LOADING AWAL DENGAN LOGO BULAT GOOGLE DRIVE)
+         ===================================================================== -->
+    <div id="splash-screen" class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#0f0f0f] transition-opacity duration-700">
+        <!-- Bingkai Bulat untuk Logo Google Drive -->
+        <div class="relative w-32 h-32 md:w-40 md:h-40 rounded-full p-1 bg-gradient-to-tr from-blue-500 via-purple-500 to-pink-500 logo-splash flex items-center justify-center">
+            <div class="w-full h-full rounded-full overflow-hidden bg-zinc-900 flex items-center justify-center">
+                <img id="splash-logo-img" 
+                     src="" 
+                     alt="Logo Auraphone Play" 
+                     class="w-full h-full object-cover"
+                     onerror="this.src='https://placehold.co/300x300/18181b/ffffff?text=AP'">
+            </div>
+        </div>
+        <h1 class="mt-6 text-2xl md:text-3xl font-extrabold tracking-tight bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+            Auraphone Play
+        </h1>
+        <p class="mt-2 text-sm text-zinc-400 flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-blue-500 animate-ping"></span>
+            Memuat Galeri Desain Google Drive...
+        </p>
+    </div>
+
+    <!-- =====================================================================
+         2. NAVBAR UTAMA (ALA YOUTUBE)
+         ===================================================================== -->
+    <header class="sticky top-0 z-40 bg-[#0f0f0f]/95 backdrop-blur-md border-b border-zinc-800/80 px-4 py-3">
+        <div class="max-w-[1800px] mx-auto flex flex-wrap items-center justify-between gap-4">
+            <!-- Kiri: Logo Bulat & Nama Brand -->
+            <div onclick="kembaliKeBeranda()" class="flex items-center gap-3 cursor-pointer group">
+                <div class="w-10 h-10 rounded-full overflow-hidden border-2 border-blue-500/80 group-hover:scale-105 transition-transform bg-zinc-800 shrink-0">
+                    <img id="navbar-logo-img" 
+                         src="" 
+                         alt="Logo" 
+                         class="w-full h-full object-cover"
+                         onerror="this.src='https://placehold.co/100x100/18181b/ffffff?text=AP'">
+                </div>
+                <div class="flex flex-col">
+                    <span class="text-lg md:text-xl font-bold tracking-tight text-white flex items-center gap-1">
+                        Auraphone <span class="bg-blue-600 text-white text-xs px-2 py-0.5 rounded-full font-semibold">Play</span>
+                    </span>
+                    <span class="text-[11px] text-zinc-400 hidden sm:inline">Pratinjau Desain HD</span>
+                </div>
+            </div>
+
+            <!-- Tengah: Kolom Pencarian -->
+            <div class="flex-1 max-w-xl order-3 md:order-2 w-full md:w-auto">
+                <div class="relative flex items-center">
+                    <input type="text" 
+                           id="search-input" 
+                           oninput="cariDesain()"
+                           placeholder="Cari judul desain, desainer, atau kategori..." 
+                           class="w-full bg-[#121212] border border-zinc-700 focus:border-blue-500 text-sm text-white rounded-full py-2.5 pl-5 pr-12 outline-none transition-colors">
+                    <button onclick="cariDesain()" class="absolute right-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 p-2 rounded-full transition-colors" title="Cari">
+                        <i data-lucide="search" class="w-4 h-4"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Kanan: Tombol Tambah Cepat & Info Jumlah Desain -->
+            <div class="flex items-center gap-2.5 order-2 md:order-3">
+                <span id="total-desain-badge" class="hidden sm:inline-flex items-center gap-1.5 text-xs font-medium bg-zinc-800/90 text-zinc-300 px-3 py-2 rounded-full border border-zinc-700/60">
+                    <i data-lucide="image" class="w-3.5 h-3.5 text-blue-400"></i>
+                    <span id="count-number">0</span> Desain
+                </span>
+                <button onclick="bukaModalPassword()" class="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 active:scale-95 text-white text-xs md:text-sm font-semibold px-4 py-2.5 rounded-full transition-all shadow-lg shadow-blue-600/20">
+                    <i data-lucide="lock" class="w-4 h-4"></i>
+                    <span>Upload GDrive</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- =====================================================================
+         3. KONTEN UTAMA (BERANDA GRID MAKSIMAL 5 KOLOM)
+         ===================================================================== -->
+    <main class="max-w-[1800px] mx-auto px-4 sm:px-6 py-6">
+        
+        <!-- VIEW A: HALAMAN BERANDA (GRID 5 KOLOM KE PINGGIR) -->
+        <section id="home-view" class="block">
+            <!-- Filter Kategori Sederhana -->
+            <div class="flex items-center gap-2 overflow-x-auto pb-4 mb-4 no-scrollbar">
+                <button onclick="filterKategori('Semua')" class="kategori-btn active bg-white text-black font-semibold text-xs px-4 py-2 rounded-xl transition-all shrink-0">Semua Desain</button>
+                <button onclick="filterKategori('UI/UX')" class="kategori-btn bg-zinc-800 hover:bg-zinc-700 text-zinc-200 font-medium text-xs px-4 py-2 rounded-xl transition-all shrink-0">UI/UX & App</button>
+                <button onclick="filterKategori('Poster')" class="kategori-btn bg-zinc-800 hover:bg-zinc-700 text-zinc-200 font-medium text-xs px-4 py-2 rounded-xl transition-all shrink-0">Poster & Banner</button>
+                <button onclick="filterKategori('Branding')" class="kategori-btn bg-zinc-800 hover:bg-zinc-700 text-zinc-200 font-medium text-xs px-4 py-2 rounded-xl transition-all shrink-0">Logo & Branding</button>
+                <button onclick="filterKategori('Produk')" class="kategori-btn bg-zinc-800 hover:bg-zinc-700 text-zinc-200 font-medium text-xs px-4 py-2 rounded-xl transition-all shrink-0">Mockup Produk</button>
+            </div>
+
+            <!-- Grid Foto Utama: Responsif 1 -> 2 -> 3 -> 4 -> MAKSIMAL 5 KE PINGGIR (xl:grid-cols-5) -->
+            <div id="design-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-x-4 gap-y-8">
+                <!-- Kartu Desain akan dirender oleh JavaScript di sini -->
+            </div>
+
+            <!-- Pesan Jika Galeri Masih Kosong / Pencarian Kosong -->
+            <div id="empty-state" class="hidden flex-col items-center justify-center py-24 text-center">
+                <div class="w-16 h-16 rounded-full bg-zinc-800 flex items-center justify-center mb-4">
+                    <i data-lucide="folder-open" class="w-8 h-8 text-zinc-400"></i>
+                </div>
+                <h3 class="text-lg font-semibold text-white">Belum ada desain yang diunggah</h3>
+                <p class="text-sm text-zinc-400 mt-1 max-w-md">Galeri saat ini masih kosong. Klik tombol <b>Upload GDrive</b> di pojok kanan atas dan masukkan password untuk menambahkan desain pertama.</p>
+            </div>
+        </section>
+
+        <!-- VIEW B: HALAMAN PRATINJAU DETAIL (ALA HALAMAN NONTON YOUTUBE) -->
+        <section id="detail-view" class="hidden">
+            <!-- Tombol Kembali -->
+            <button onclick="kembaliKeBeranda()" class="mb-4 inline-flex items-center gap-2 text-sm font-medium text-zinc-300 hover:text-white bg-zinc-800/80 hover:bg-zinc-700 px-4 py-2 rounded-full transition-colors">
+                <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                Kembali ke Galeri Utama
+            </button>
+
+            <div class="max-w-6xl mx-auto">
+                <!-- 1. LAYAR PRATINJAU FOTO UTAMA (BESAR & JELAS TANPA KOMPRESI WA) -->
+                <div class="relative w-full bg-zinc-950 rounded-2xl overflow-hidden border border-zinc-800 shadow-2xl flex items-center justify-center group">
+                    <img id="detail-image" 
+                         src="" 
+                         alt="Pratinjau Desain" 
+                         class="max-h-[78vh] w-auto max-w-full object-contain transition-transform duration-300"
+                         onerror="this.src='https://placehold.co/1200x800/18181b/ffffff?text=Gagal+Memuat+Gambar+Google+Drive'">
+                    
+                    <!-- Tombol Buka Ukuran Penuh / Tab Baru -->
+                    <a id="detail-open-original" href="#" target="_blank" rel="noopener noreferrer" 
+                       class="absolute bottom-4 right-4 bg-black/75 hover:bg-black text-white text-xs font-medium px-3.5 py-2 rounded-xl backdrop-blur-md border border-white/10 flex items-center gap-2 opacity-90 hover:opacity-100 transition-all">
+                        <i data-lucide="maximize-2" class="w-3.5 h-3.5"></i>
+                        Buka Resolusi Asli
+                    </a>
+                </div>
+
+                <!-- 2. JUDUL DESAIN (BISA DIKLIK UNTUK MEMBUKA/MENUTUP DESKRIPSI) -->
+                <div class="mt-4">
+                    <div onclick="toggleDeskripsi()" 
+                         class="cursor-pointer group flex items-start justify-between gap-3 p-2 -mx-2 rounded-xl hover:bg-zinc-800/50 transition-colors"
+                         title="Klik judul untuk melihat atau menyembunyikan deskripsi">
+                        <h1 id="detail-title" class="text-xl sm:text-2xl font-bold text-white leading-snug group-hover:text-blue-400 transition-colors">
+                            Judul Desain
+                        </h1>
+                        <span class="mt-1 bg-zinc-800 text-zinc-300 p-1.5 rounded-full shrink-0 group-hover:bg-zinc-700">
+                            <i id="desc-chevron" data-lucide="chevron-down" class="w-5 h-5 transition-transform duration-300"></i>
+                        </span>
+                    </div>
+                    <p class="text-xs text-blue-400/90 mt-0.5 cursor-pointer" onclick="toggleDeskripsi()">
+                        Klik judul di atas untuk melihat rincian deskripsi & info pembuat
+                    </p>
+                </div>
+
+                <!-- 3. BARIS AKSI: INFO PENYEDIA + TOMBOL LIKE, DISLIKE & BAGIKAN -->
+                <div class="mt-4 flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-zinc-800">
+                    <!-- Info Singkat Channel / Desainer -->
+                    <div class="flex items-center gap-3">
+                        <div id="detail-avatar-container" class="w-11 h-11 rounded-full overflow-hidden bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-white font-bold text-base shrink-0 shadow-md border border-zinc-700/80">
+                            <span id="detail-avatar-initial">A</span>
+                        </div>
+                        <div>
+                            <h3 id="detail-designer-top" class="font-semibold text-white text-sm sm:text-base flex items-center gap-1.5">
+                                Nama Channel
+                            </h3>
+                            <p id="detail-provider-top" class="text-xs text-zinc-400">Penyedia: -</p>
+                        </div>
+                    </div>
+
+                    <!-- Tombol Like, Dislike, dan Salin Link -->
+                    <div class="flex items-center gap-2.5 flex-wrap">
+                        <!-- Pill Like & Dislike ala YouTube -->
+                        <div class="flex items-center bg-zinc-800/90 rounded-full border border-zinc-700/70 overflow-hidden">
+                            <button id="btn-like" onclick="aksiLike()" class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-zinc-200 hover:bg-zinc-700 transition-colors">
+                                <i data-lucide="thumbs-up" class="w-4 h-4"></i>
+                                <span id="detail-like-count">0</span>
+                            </button>
+                            <div class="w-[1px] h-5 bg-zinc-700"></div>
+                            <button id="btn-dislike" onclick="aksiDislike()" class="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-zinc-200 hover:bg-zinc-700 transition-colors" title="Tidak Suka">
+                                <i data-lucide="thumbs-down" class="w-4 h-4"></i>
+                                <span id="detail-dislike-count" class="text-xs text-zinc-400">0</span>
+                            </button>
+                        </div>
+
+                        <!-- Tombol Salin Link Pratinjau -->
+                        <button onclick="salinLinkDesain()" class="flex items-center gap-2 bg-zinc-800/90 hover:bg-zinc-700 text-zinc-200 text-sm font-medium px-4 py-2 rounded-full border border-zinc-700/70 transition-colors">
+                            <i data-lucide="share-2" class="w-4 h-4"></i>
+                            <span>Salin Link</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 4. KOTAK DESKRIPSI (MUNCUL SAAT JUDUL DIKLIK) -->
+                <div id="description-box" class="hidden mt-4 bg-zinc-900/95 border border-zinc-800 rounded-2xl p-4 sm:p-5 transition-all">
+                    <!-- Isi Deskripsi Utama -->
+                    <p id="detail-description" class="text-sm text-zinc-200 whitespace-pre-line leading-relaxed">
+                        Deskripsi desain akan muncul di sini...
+                    </p>
+
+                    <!-- Keterangan Wajib di Bawah Deskripsi: Siapa Desainer, Kapan Upload, Berapa Like, Penyedia Siapa -->
+                    <div class="mt-4 pt-4 border-t border-zinc-800 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
+                        <div class="bg-zinc-950/80 p-3 rounded-xl border border-zinc-800/80">
+                            <span class="text-zinc-400 block mb-0.5">Channel / Desainer:</span>
+                            <strong id="meta-designer" class="text-white text-sm font-semibold flex items-center gap-1">-</strong>
+                        </div>
+                        <div class="bg-zinc-950/80 p-3 rounded-xl border border-zinc-800/80">
+                            <span class="text-zinc-400 block mb-0.5">Diunggah pada:</span>
+                            <strong id="meta-date" class="text-white text-sm font-semibold">-</strong>
+                        </div>
+                        <div class="bg-zinc-950/80 p-3 rounded-xl border border-zinc-800/80">
+                            <span class="text-zinc-400 block mb-0.5">Jumlah Suka (Like):</span>
+                            <strong id="meta-likes" class="text-blue-400 text-sm font-semibold">0 Suka</strong>
+                        </div>
+                        <div class="bg-zinc-950/80 p-3 rounded-xl border border-zinc-800/80">
+                            <span class="text-zinc-400 block mb-0.5">Penyedia / Sumber:</span>
+                            <strong id="meta-provider" class="text-white text-sm font-semibold">-</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 5. KOLOM KOMENTAR -->
+                <div class="mt-6">
+                    <h3 id="comment-count-title" class="text-base font-bold text-white mb-4">0 Komentar</h3>
+                    
+                    <!-- Form Tambah Komentar -->
+                    <form onsubmit="kirimKomentar(event)" class="flex flex-col sm:flex-row gap-3 mb-6">
+                        <input type="text" id="comment-name" placeholder="Nama Anda (Opsional)" 
+                               class="sm:w-48 bg-zinc-900 border border-zinc-700 focus:border-blue-500 rounded-xl px-3.5 py-2.5 text-sm text-white outline-none">
+                        <div class="flex-1 flex gap-2">
+                            <input type="text" id="comment-text" required placeholder="Tulis komentar atau catatan revisi desain..." 
+                                   class="flex-1 bg-zinc-900 border border-zinc-700 focus:border-blue-500 rounded-xl px-3.5 py-2.5 text-sm text-white outline-none">
+                            <button type="submit" class="bg-blue-600 hover:bg-blue-500 text-white font-semibold text-sm px-5 py-2.5 rounded-xl transition-colors shrink-0">
+                                Kirim
+                            </button>
+                        </div>
+                    </form>
+
+                    <!-- Daftar Komentar -->
+                    <div id="comments-list" class="space-y-3">
+                        <!-- Komentar dirender di sini -->
+                    </div>
+                </div>
+
+                <!-- 6. REKOMENDASI FOTO LAINNYA (OTOMATIS ACAK DENGAN ALGORITMA FISHER-YATES SHUFFLE) -->
+                <div class="mt-10 pt-8 border-t border-zinc-800">
+                    <div class="mb-5">
+                        <h2 class="text-lg sm:text-xl font-bold text-white flex items-center gap-2">
+                            <i data-lucide="sparkles" class="w-5 h-5 text-purple-400"></i>
+                            Rekomendasi Desain Lainnya Untuk Anda
+                        </h2>
+                        <p class="text-xs text-zinc-400 mt-0.5">Dipilih & diacak otomatis oleh algoritma sistem</p>
+                    </div>
+
+                    <!-- Grid Rekomendasi Maksimal 5 Kolom -->
+                    <div id="recommendations-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                        <!-- Kartu rekomendasi acak dirender di sini -->
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- =====================================================================
+         FOOTER HAK CIPTA
+         ===================================================================== -->
+    <footer class="mt-16 border-t border-zinc-800/80 py-6 px-4 text-center text-xs text-zinc-500">
+        <p>© 2026 Auraphone Systems. All Right Reseved</p>
+    </footer>
+
+    <!-- =====================================================================
+         MENU KLIK KANAN KHUSUS CHANNEL ("Hapus Channel")
+         ===================================================================== -->
+    <div id="channel-context-menu" class="fixed z-50 hidden bg-zinc-900 border border-zinc-700 rounded-xl shadow-2xl py-1.5 min-w-[180px] overflow-hidden">
+        <button id="btn-trigger-delete-channel" onclick="bukaModalHapusChannel()" class="w-full text-left px-4 py-2.5 text-xs font-semibold text-red-400 hover:bg-red-500/15 flex items-center gap-2 transition-colors">
+            <i data-lucide="trash-2" class="w-4 h-4"></i>
+            <span>Hapus Channel</span>
+        </button>
+    </div>
+
+    <!-- =====================================================================
+         MODAL KONFIRMASI HAPUS CHANNEL DENGAN PASSWORD (060312)
+         ===================================================================== -->
+    <div id="delete-channel-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+        <div class="bg-zinc-900 border border-zinc-700 rounded-2xl max-w-sm w-full p-6 shadow-2xl">
+            <div class="flex items-center justify-between pb-3 border-b border-zinc-800">
+                <h3 class="text-base font-bold text-red-400 flex items-center gap-2">
+                    <i data-lucide="alert-triangle" class="w-5 h-5"></i>
+                    Hapus Channel
+                </h3>
+                <button onclick="tutupModalHapusChannel()" class="text-zinc-400 hover:text-white p-1 rounded-lg">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <form onsubmit="konfirmasiHapusChannel(event)" class="mt-4 space-y-4">
+                <p class="text-xs text-zinc-300 leading-relaxed">
+                    Anda akan menghapus channel <strong id="target-delete-channel-name" class="text-white">-</strong> beserta seluruh desain di dalamnya secara permanen dari semua perangkat.
+                </p>
+                <div>
+                    <label class="block text-xs font-medium text-zinc-300 mb-1.5">Masukkan Password Konfirmasi *</label>
+                    <input type="password" id="input-delete-password" required
+                           placeholder="••••••"
+                           class="w-full bg-zinc-950 border border-zinc-700 focus:border-red-500 rounded-xl px-4 py-2.5 text-sm text-white tracking-widest outline-none">
+                    <p id="delete-password-error" class="hidden text-xs text-red-400 mt-1.5">Password salah! Penghapusan dibatalkan.</p>
+                </div>
+
+                <div class="flex items-center justify-end gap-2">
+                    <button type="button" onclick="tutupModalHapusChannel()" class="px-4 py-2 text-xs font-medium text-zinc-300 hover:text-white bg-zinc-800 rounded-xl">Batal</button>
+                    <button type="submit" class="px-5 py-2 text-xs font-semibold text-white bg-red-600 hover:bg-red-500 rounded-xl">Hapus Permanen</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- =====================================================================
+         4A. MODAL VERIFIKASI PASSWORD UPLOAD (PASSWORD: 060312)
+         ===================================================================== -->
+    <div id="password-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+        <div class="bg-zinc-900 border border-zinc-700 rounded-2xl max-w-sm w-full p-6 shadow-2xl">
+            <div class="flex items-center justify-between pb-3 border-b border-zinc-800">
+                <h3 class="text-base font-bold text-white flex items-center gap-2">
+                    <i data-lucide="shield-lock" class="w-5 h-5 text-blue-400"></i>
+                    Akses Terbatas Admin
+                </h3>
+                <button onclick="tutupModalPassword()" class="text-zinc-400 hover:text-white p-1 rounded-lg">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <form onsubmit="verifikasiPassword(event)" class="mt-4 space-y-4">
+                <div>
+                    <label class="block text-xs font-medium text-zinc-300 mb-1.5">Masukkan Password Upload *</label>
+                    <input type="password" id="input-upload-password" required
+                           placeholder="••••••"
+                           class="w-full bg-zinc-950 border border-zinc-700 focus:border-blue-500 rounded-xl px-4 py-2.5 text-sm text-white tracking-widest outline-none">
+                    <p id="password-error-msg" class="hidden text-xs text-red-400 mt-1.5">Password salah! Silakan coba lagi.</p>
+                </div>
+
+                <div class="flex items-center justify-end gap-2">
+                    <button type="button" onclick="tutupModalPassword()" class="px-4 py-2 text-xs font-medium text-zinc-300 hover:text-white bg-zinc-800 rounded-xl">Batal</button>
+                    <button type="submit" class="px-5 py-2 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-xl">Buka Form Upload</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- =====================================================================
+         4B. MODAL UPLOAD LINK GOOGLE DRIVE & BUAT CHANNEL
+         ===================================================================== -->
+    <div id="add-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+        <div class="bg-zinc-900 border border-zinc-700 rounded-2xl max-w-lg w-full p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between pb-3 border-b border-zinc-800">
+                <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                    <i data-lucide="folder-git-2" class="w-5 h-5 text-blue-400"></i>
+                    Upload Desain Google Drive
+                </h3>
+                <button onclick="tutupModalTambah()" class="text-zinc-400 hover:text-white p-1 rounded-lg">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <form onsubmit="tambahDesainBaru(event)" class="mt-4 space-y-3.5">
+                <div>
+                    <label class="block text-xs font-medium text-zinc-300 mb-1">Link Foto Google Drive *</label>
+                    <input type="url" id="input-gdrive-link" required
+                           placeholder="https://drive.google.com/file/d/1ABC.../view?usp=sharing"
+                           class="w-full bg-zinc-950 border border-zinc-700 focus:border-blue-500 rounded-xl px-3.5 py-2.5 text-sm text-white outline-none">
+                    <p class="text-[11px] text-zinc-400 mt-1">Pastikan akses file Google Drive disetel ke <b>"Siapa saja yang memiliki link"</b>.</p>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-medium text-zinc-300 mb-1">Judul Desain *</label>
+                    <input type="text" id="input-title" required placeholder="Contoh: Poster Promo Ramadhan 2026"
+                           class="w-full bg-zinc-950 border border-zinc-700 focus:border-blue-500 rounded-xl px-3.5 py-2.5 text-sm text-white outline-none">
+                </div>
+
+                <!-- Pembuatan Channel Sekaligus Upload -->
+                <div>
+                    <label class="block text-xs font-medium text-zinc-300 mb-1">Nama Channel / Pembuat *</label>
+                    <input type="text" id="input-channel" required oninput="cekPreviewVerifikasi()"
+                           placeholder="Contoh: Azfarazqa atau nama channel lainnya"
+                           class="w-full bg-zinc-950 border border-zinc-700 focus:border-blue-500 rounded-xl px-3.5 py-2.5 text-sm text-white outline-none">
+                    <div id="channel-verify-preview" class="mt-1.5 text-[11px] flex items-center gap-1.5 text-zinc-400">
+                        <span>Status Channel:</span>
+                        <span id="verify-status-badge" class="font-medium text-zinc-300">Channel Standar (Belum Terverifikasi)</span>
+                    </div>
+                </div>
+
+                <!-- Foto Profil Channel (Opsional via Link Google Drive) -->
+                <div>
+                    <label class="block text-xs font-medium text-zinc-300 mb-1">Link Foto Profil Channel (Google Drive - Opsional)</label>
+                    <input type="url" id="input-channel-avatar"
+                           placeholder="https://drive.google.com/file/d/ID_FOTO_PROFIL/view?usp=sharing"
+                           class="w-full bg-zinc-950 border border-zinc-700 focus:border-blue-500 rounded-xl px-3.5 py-2 text-sm text-white outline-none">
+                    <p class="text-[11px] text-zinc-400 mt-1">Jika dikosongkan, otomatis memakai foto profil channel sebelumnya atau huruf inisial.</p>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-medium text-zinc-300 mb-1">Kategori</label>
+                        <select id="input-category" class="w-full bg-zinc-950 border border-zinc-700 focus:border-blue-500 rounded-xl px-3 py-2 text-sm text-white outline-none">
+                            <option value="Branding">Branding</option>
+                            <option value="UI/UX">UI/UX</option>
+                            <option value="Poster">Poster</option>
+                            <option value="Produk">Produk</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-zinc-300 mb-1">Penyedia</label>
+                        <input type="text" id="input-provider" placeholder="Contoh: Google Drive Studio"
+                               class="w-full bg-zinc-950 border border-zinc-700 focus:border-blue-500 rounded-xl px-3.5 py-2 text-sm text-white outline-none">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-medium text-zinc-300 mb-1">Deskripsi Desain</label>
+                    <textarea id="input-desc" rows="2" placeholder="Tulis detail ukuran, warna, atau catatan revisi..."
+                              class="w-full bg-zinc-950 border border-zinc-700 focus:border-blue-500 rounded-xl px-3.5 py-2 text-sm text-white outline-none"></textarea>
+                </div>
+
+                <div class="pt-2 flex items-center justify-end gap-2">
+                    <button type="button" onclick="tutupModalTambah()" class="px-4 py-2 text-sm text-zinc-300 hover:text-white bg-zinc-800 rounded-xl">Batal</button>
+                    <button type="submit" class="px-5 py-2 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-xl">Publikasikan Desain</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Notifikasi Toast Pengganti alert() -->
+    <div id="toast-box" class="fixed bottom-5 right-5 z-50 transform translate-y-20 opacity-0 transition-all duration-300 bg-zinc-800 border border-zinc-700 text-white text-sm px-4 py-3 rounded-xl shadow-2xl flex items-center gap-2.5">
+        <i data-lucide="check-circle-2" class="w-4 h-4 text-green-400"></i>
+        <span id="toast-message">Pesan notifikasi</span>
+    </div>
+
+    <!-- =====================================================================
+         5. JAVASCRIPT & PENYIMPANAN CLOUD REAL-TIME LINTAS PERANGKAT
+         ===================================================================== -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, doc, addDoc, updateDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // =====================================================================
+        // KONFIGURASI UTAMA & LOGO GOOGLE DRIVE
+        // =====================================================================
+        const LOGO_GDRIVE_LINK = "https://drive.google.com/file/d/1ZwCzR-VGkyKaFi-1jSThtVR4XVFlIRUC/view?usp=sharing";
+        const UPLOAD_PASSWORD = "060312";
+        const CHANNEL_RESMI_KEYWORDS = [
+            "azfarazqa",
+            "auraphone pictures entertainment",
+            "griya surya indah (gsi) pictures entertainment"
+        ];
+
+        // Inisialisasi Cloud Storage Lintas Perangkat
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'auraphone-play-default';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
+        let db = null;
+        let auth = null;
+        let currentUser = null;
+
+        let sudahTerautentikasi = false;
+        let kategoriAktif = "Semua";
+        let desainAktif = null;
+        let channelTargetHapus = null;
+        let statusInteraksi = {}; // Menyimpan status like/dislike sesi ini per ID desain
+
+        /**
+         * =====================================================================
+         * DATABASE DESAIN (TERHUBUNG CLOUD + BISA COPY-PASTE MANUAL DI SINI)
+         * =====================================================================
+         * Jika ingin menambah desain statis langsung lewat kode tanpa batas,
+         * salin objek ke dalam array desainStatisKode di bawah ini:
+         */
+        const desainStatisKode = [
+            // Contoh format copy-paste:
+            // {
+            //     id: "kode-1",
+            //     driveUrl: "https://drive.google.com/file/d/ID_FILE_ANDA/view?usp=sharing",
+            //     judul: "Judul Desain Anda",
+            //     deskripsi: "Deskripsi lengkap desain...",
+            //     desainer: "Azfarazqa",
+            //     channelAvatarUrl: "https://drive.google.com/file/d/ID_FOTO_PROFIL/view?usp=sharing",
+            //     tanggalUpload: "22 November 2026",
+            //     likes: 0,
+            //     dislikes: 0,
+            //     penyedia: "Google Drive Studio",
+            //     kategori: "Branding",
+            //     komentar: [],
+            //     createdAt: 1700000000000
+            // },
+        ];
+
+        let desainCloud = [];
+        let daftarDesain = [...desainStatisKode];
+
+        function gabungkanSemuaDesain() {
+            daftarDesain = [...desainStatisKode, ...desainCloud].sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
+            terapkanFilterDanCari();
+
+            // Jika sedang membuka halaman detail, perbarui data real-time-nya
+            if (desainAktif) {
+                const pembaruan = daftarDesain.find(d => d.id === desainAktif.id);
+                if (pembaruan) {
+                    desainAktif = pembaruan;
+                    perbaruiTampilanLikeDislike();
+                    renderKomentar();
+                } else {
+                    kembaliKeBeranda();
+                }
+            }
+        }
+
+        async function inisialisasiSinkronisasiCloud() {
+            if (!firebaseConfig) return;
+            try {
+                const app = initializeApp(firebaseConfig);
+                auth = getAuth(app);
+                db = getFirestore(app);
+
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    const cred = await signInWithCustomToken(auth, __initial_auth_token);
+                    currentUser = cred.user;
+                } else {
+                    const cred = await signInAnonymously(auth);
+                    currentUser = cred.user;
+                }
+
+                if (!currentUser) return;
+
+                const desainColRef = collection(db, 'artifacts', appId, 'public', 'data', 'auraphone_designs');
+                onSnapshot(desainColRef, (snapshot) => {
+                    const hasil = [];
+                    snapshot.forEach((docSnap) => {
+                        hasil.push({
+                            id: docSnap.id,
+                            isCloud: true,
+                            ...docSnap.data()
+                        });
+                    });
+                    desainCloud = hasil;
+                    gabungkanSemuaDesain();
+                }, (error) => {
+                    console.error("Gagal menyinkronkan data:", error);
+                });
+            } catch (err) {
+                console.error("Inisialisasi penyimpanan lintas perangkat gagal:", err);
+            }
+        }
+
+        /**
+         * KONVERSI LINK GOOGLE DRIVE MENJADI URL GAMBAR RESOLUSI TINGGI
+         */
+        function ekstrakIdGoogleDrive(url) {
+            if (!url) return null;
+            const patterns = [
+                /\/file\/d\/([a-zA-Z0-9_-]+)/,
+                /id=([a-zA-Z0-9_-]+)/,
+                /\/d\/([a-zA-Z0-9_-]+)/
+            ];
+            for (const pattern of patterns) {
+                const match = url.match(pattern);
+                if (match && match[1]) return match[1];
+            }
+            return null;
+        }
+
+        function dapatkanUrlGambarGDrive(url, ukuran = "w1600") {
+            const fileId = ekstrakIdGoogleDrive(url);
+            if (!fileId) return url;
+            return `https://drive.google.com/thumbnail?id=${fileId}&sz=${ukuran}`;
+        }
+
+        /**
+         * MENDAPATKAN AVATAR CHANNEL (FOTO PROFIL GDRIVE ATAU INISIAL)
+         */
+        function dapatkanAvatarChannel(namaChannel, avatarUrlLangsung = "") {
+            if (avatarUrlLangsung && avatarUrlLangsung.trim()) {
+                return avatarUrlLangsung.trim();
+            }
+            const desainDenganAvatar = [...daftarDesain].reverse().find(
+                d => d.desainer && d.desainer.toLowerCase() === (namaChannel || "").toLowerCase() && d.channelAvatarUrl
+            );
+            return desainDenganAvatar ? desainDenganAvatar.channelAvatarUrl : "";
+        }
+
+        function buatHtmlAvatarChannel(namaChannel, avatarUrlLangsung = "", ukuranKelas = "w-9 h-9 text-xs") {
+            const inisial = (namaChannel || "A").charAt(0).toUpperCase();
+            const rawAvatar = dapatkanAvatarChannel(namaChannel, avatarUrlLangsung);
+            if (rawAvatar) {
+                const imgAvatar = dapatkanUrlGambarGDrive(rawAvatar, "w300");
+                return `<img src="${imgAvatar}" alt="${namaChannel}" class="w-full h-full object-cover" onerror="this.onerror=null;this.parentElement.innerHTML='${inisial}'">`;
+            }
+            return `<span>${inisial}</span>`;
+        }
+
+        /**
+         * CEK STATUS VERIFIKASI CHANNEL RESMI
+         */
+        function apakahChannelTerverifikasi(namaChannel) {
+            if (!namaChannel) return false;
+            const namaLower = namaChannel.toLowerCase();
+            return CHANNEL_RESMI_KEYWORDS.some(keyword => namaLower.includes(keyword));
+        }
+
+        function buatBadgeVerifikasi(namaChannel) {
+            if (!apakahChannelTerverifikasi(namaChannel)) return "";
+            return `
+                <span class="inline-flex items-center justify-center text-blue-400 shrink-0" title="Channel Resmi Terverifikasi">
+                    <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                        <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm-1.9 14.7L6 12.6l1.5-1.5 2.6 2.6 6.4-6.4 1.5 1.5-7.9 7.9z"/>
+                    </svg>
+                </span>
+            `;
+        }
+
+        /**
+         * MENU KLIK KANAN KHUSUS CHANNEL -> "Hapus Channel"
+         */
+        function tampilkanMenuKlikKananChannel(e, namaChannel) {
+            e.preventDefault();
+            e.stopPropagation();
+            channelTargetHapus = namaChannel;
+
+            const menu = document.getElementById("channel-context-menu");
+            menu.classList.remove("hidden");
+
+            const menuWidth = 190;
+            const menuHeight = 48;
+            const posX = Math.min(e.clientX, window.innerWidth - menuWidth - 10);
+            const posY = Math.min(e.clientY, window.innerHeight - menuHeight - 10);
+
+            menu.style.left = `${posX}px`;
+            menu.style.top = `${posY}px`;
+            lucide.createIcons();
+        }
+
+        document.addEventListener("click", () => {
+            const menu = document.getElementById("channel-context-menu");
+            if (menu && !menu.classList.contains("hidden")) {
+                menu.classList.add("hidden");
+            }
+        });
+
+        function bukaModalHapusChannel() {
+            document.getElementById("channel-context-menu").classList.add("hidden");
+            if (!channelTargetHapus) return;
+
+            document.getElementById("target-delete-channel-name").textContent = channelTargetHapus;
+            document.getElementById("delete-password-error").classList.add("hidden");
+            document.getElementById("input-delete-password").value = "";
+
+            const modal = document.getElementById("delete-channel-modal");
+            modal.classList.remove("hidden");
+            modal.classList.add("flex");
+            lucide.createIcons();
+            setTimeout(() => document.getElementById("input-delete-password").focus(), 100);
+        }
+
+        function tutupModalHapusChannel() {
+            const modal = document.getElementById("delete-channel-modal");
+            modal.classList.add("hidden");
+            modal.classList.remove("flex");
+        }
+
+        async function konfirmasiHapusChannel(e) {
+            e.preventDefault();
+            const pass = document.getElementById("input-delete-password").value;
+            const errEl = document.getElementById("delete-password-error");
+
+            if (pass !== UPLOAD_PASSWORD) {
+                errEl.classList.remove("hidden");
+                document.getElementById("input-delete-password").value = "";
+                document.getElementById("input-delete-password").focus();
+                return;
+            }
+
+            const targetNama = channelTargetHapus;
+            tutupModalHapusChannel();
+
+            // Hapus semua desain milik channel tersebut dari penyimpanan cloud
+            const desainMilikChannel = desainCloud.filter(d => d.desainer === targetNama);
+            if (db && currentUser && desainMilikChannel.length > 0) {
+                try {
+                    for (const item of desainMilikChannel) {
+                        const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'auraphone_designs', item.id);
+                        await deleteDoc(docRef);
+                    }
+                } catch (err) {
+                    console.error("Gagal menghapus channel dari cloud:", err);
+                }
+            }
+
+            // Hapus juga dari memori lokal jika ada
+            desainCloud = desainCloud.filter(d => d.desainer !== targetNama);
+            gabungkanSemuaDesain();
+
+            if (desainAktif && desainAktif.desainer === targetNama) {
+                kembaliKeBeranda();
+            }
+
+            tampilkanNotifikasi(`Channel "${targetNama}" berhasil dihapus!`);
+            channelTargetHapus = null;
+        }
+
+        /**
+         * INISIALISASI SPLASH SCREEN & HALAMAN AWAL
+         */
+        window.addEventListener("DOMContentLoaded", () => {
+            const logoUrl = dapatkanUrlGambarGDrive(LOGO_GDRIVE_LINK, "w500");
+            const splashImg = document.getElementById("splash-logo-img");
+            const navbarImg = document.getElementById("navbar-logo-img");
+
+            if (splashImg) splashImg.src = logoUrl;
+            if (navbarImg) navbarImg.src = logoUrl;
+
+            lucide.createIcons();
+            renderGridUtama(daftarDesain);
+            inisialisasiSinkronisasiCloud();
+
+            setTimeout(() => {
+                const splash = document.getElementById("splash-screen");
+                if (splash) {
+                    splash.classList.add("opacity-0", "pointer-events-none");
+                    setTimeout(() => {
+                        splash.style.display = "none";
+                    }, 700);
+                }
+            }, 1800);
+        });
+
+        /**
+         * RENDER GRID UTAMA (MAKSIMAL 5 KE PINGGIR)
+         */
+        function renderGridUtama(data) {
+            const grid = document.getElementById("design-grid");
+            const emptyState = document.getElementById("empty-state");
+            const countNumber = document.getElementById("count-number");
+
+            if (countNumber) countNumber.textContent = daftarDesain.length;
+            grid.innerHTML = "";
+
+            if (!data || data.length === 0) {
+                emptyState.classList.remove("hidden");
+                emptyState.classList.add("flex");
+                lucide.createIcons();
+                return;
+            }
+
+            emptyState.classList.add("hidden");
+            emptyState.classList.remove("flex");
+
+            data.forEach((item) => {
+                const imgSrc = dapatkanUrlGambarGDrive(item.driveUrl, "w1000");
+                const avatarHtml = buatHtmlAvatarChannel(item.desainer, item.channelAvatarUrl);
+                const badgeVerif = buatBadgeVerifikasi(item.desainer);
+                const nomorUrut = daftarDesain.findIndex(d => d.id === item.id) + 1;
+
+                const card = document.createElement("article");
+                card.onclick = () => bukaDetailDesain(item.id);
+                card.className = "group cursor-pointer flex flex-col";
+                card.innerHTML = `
+                    <div class="relative aspect-video w-full rounded-xl overflow-hidden bg-zinc-900 border border-zinc-800/80 group-hover:border-blue-500/60 transition-all shadow-md">
+                        <img src="${imgSrc}" 
+                             alt="${item.judul}" 
+                             loading="lazy"
+                             class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                             onerror="this.src='https://placehold.co/800x450/18181b/ffffff?text=Foto+%23${nomorUrut}'">
+                        <span class="absolute top-2 left-2 bg-black/75 backdrop-blur-md text-white text-[11px] font-bold px-2.5 py-0.5 rounded-lg border border-white/10">
+                            Foto #${nomorUrut}
+                        </span>
+                        <span class="absolute bottom-2 right-2 bg-black/75 backdrop-blur-md text-zinc-200 text-[10px] font-medium px-2 py-0.5 rounded-md">
+                            ${item.kategori || "Desain"}
+                        </span>
+                    </div>
+                    <div class="mt-3 flex items-start gap-3">
+                        <div oncontextmenu="tampilkanMenuKlikKananChannel(event, '${item.desainer.replace(/'/g, "\\'")}')"
+                             title="Klik kanan pada Channel untuk opsi Hapus Channel"
+                             class="w-9 h-9 rounded-full overflow-hidden bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center text-white font-bold text-xs shrink-0 mt-0.5 border border-zinc-700/70">
+                            ${avatarHtml}
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <h3 class="text-sm font-semibold text-white line-clamp-2 group-hover:text-blue-400 transition-colors leading-snug">
+                                ${item.judul}
+                            </h3>
+                            <div oncontextmenu="tampilkanMenuKlikKananChannel(event, '${item.desainer.replace(/'/g, "\\'")}')"
+                                 title="Klik kanan pada Channel untuk opsi Hapus Channel"
+                                 class="mt-1 flex items-center gap-1 text-xs text-zinc-400 hover:text-zinc-200 truncate">
+                                <span class="truncate">${item.desainer}</span>
+                                ${badgeVerif}
+                            </div>
+                            <p class="text-[11px] text-zinc-500 mt-0.5">
+                                ${item.likes} Suka • ${item.tanggalUpload}
+                            </p>
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+
+            lucide.createIcons();
+        }
+
+        /**
+         * HALAMAN DETAIL PRATINJAU DESAIN
+         */
+        function bukaDetailDesain(id) {
+            const desain = daftarDesain.find(d => d.id === id);
+            if (!desain) return;
+
+            desainAktif = desain;
+
+            document.getElementById("home-view").classList.add("hidden");
+            document.getElementById("detail-view").classList.remove("hidden");
+            window.scrollTo({ top: 0, behavior: "smooth" });
+
+            document.getElementById("detail-image").src = dapatkanUrlGambarGDrive(desain.driveUrl, "w2000");
+            document.getElementById("detail-open-original").href = desain.driveUrl;
+
+            document.getElementById("detail-title").textContent = desain.judul;
+            const descBox = document.getElementById("description-box");
+            const chevron = document.getElementById("desc-chevron");
+            descBox.classList.add("hidden");
+            if (chevron) chevron.style.transform = "rotate(0deg)";
+
+            const badgeVerif = buatBadgeVerifikasi(desain.desainer);
+            const designerTopEl = document.getElementById("detail-designer-top");
+            const avatarContainer = document.getElementById("detail-avatar-container");
+            avatarContainer.innerHTML = buatHtmlAvatarChannel(desain.desainer, desain.channelAvatarUrl);
+            avatarContainer.oncontextmenu = (e) => tampilkanMenuKlikKananChannel(e, desain.desainer);
+            avatarContainer.title = "Klik kanan pada Channel untuk opsi Hapus Channel";
+            avatarContainer.classList.add("cursor-context-menu");
+
+            designerTopEl.innerHTML = `<span>${desain.desainer}</span> ${badgeVerif}`;
+            designerTopEl.oncontextmenu = (e) => tampilkanMenuKlikKananChannel(e, desain.desainer);
+            designerTopEl.title = "Klik kanan pada Channel untuk opsi Hapus Channel";
+            designerTopEl.classList.add("cursor-context-menu");
+
+            document.getElementById("detail-provider-top").textContent = `Penyedia: ${desain.penyedia}`;
+
+            document.getElementById("detail-description").textContent = desain.deskripsi;
+            document.getElementById("meta-designer").innerHTML = `<span>${desain.desainer}</span> ${badgeVerif}`;
+            document.getElementById("meta-date").textContent = desain.tanggalUpload;
+            document.getElementById("meta-likes").textContent = `${desain.likes} Suka`;
+            document.getElementById("meta-provider").textContent = desain.penyedia;
+
+            perbaruiTampilanLikeDislike();
+            renderKomentar();
+            renderRekomendasiOtomatis(desain.id);
+            lucide.createIcons();
+        }
+
+        function toggleDeskripsi() {
+            const descBox = document.getElementById("description-box");
+            const chevron = document.getElementById("desc-chevron");
+            const tersembunyi = descBox.classList.contains("hidden");
+
+            if (tersembunyi) {
+                descBox.classList.remove("hidden");
+                if (chevron) chevron.style.transform = "rotate(180deg)";
+            } else {
+                descBox.classList.add("hidden");
+                if (chevron) chevron.style.transform = "rotate(0deg)";
+            }
+        }
+
+        /**
+         * SISTEM LIKE & DISLIKE (TERSINKRON KE CLOUD)
+         */
+        async function simpanPerubahanDesainCloud(desain) {
+            if (!db || !currentUser || !desain.isCloud) return;
+            try {
+                const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'auraphone_designs', desain.id);
+                await updateDoc(docRef, {
+                    likes: desain.likes,
+                    dislikes: desain.dislikes,
+                    komentar: desain.komentar || []
+                });
+            } catch (err) {
+                console.error("Gagal memperbarui interaksi ke cloud:", err);
+            }
+        }
+
+        function aksiLike() {
+            if (!desainAktif) return;
+            const state = statusInteraksi[desainAktif.id] || null;
+
+            if (state === "like") {
+                desainAktif.likes = Math.max(0, desainAktif.likes - 1);
+                statusInteraksi[desainAktif.id] = null;
+            } else {
+                if (state === "dislike") {
+                    desainAktif.dislikes = Math.max(0, desainAktif.dislikes - 1);
+                }
+                desainAktif.likes += 1;
+                statusInteraksi[desainAktif.id] = "like";
+            }
+            perbaruiTampilanLikeDislike();
+            simpanPerubahanDesainCloud(desainAktif);
+        }
+
+        function aksiDislike() {
+            if (!desainAktif) return;
+            const state = statusInteraksi[desainAktif.id] || null;
+
+            if (state === "dislike") {
+                desainAktif.dislikes = Math.max(0, desainAktif.dislikes - 1);
+                statusInteraksi[desainAktif.id] = null;
+            } else {
+                if (state === "like") {
+                    desainAktif.likes = Math.max(0, desainAktif.likes - 1);
+                }
+                desainAktif.dislikes += 1;
+                statusInteraksi[desainAktif.id] = "dislike";
+            }
+            perbaruiTampilanLikeDislike();
+            simpanPerubahanDesainCloud(desainAktif);
+        }
+
+        function perbaruiTampilanLikeDislike() {
+            if (!desainAktif) return;
+            const state = statusInteraksi[desainAktif.id] || null;
+            const btnLike = document.getElementById("btn-like");
+            const btnDislike = document.getElementById("btn-dislike");
+
+            document.getElementById("detail-like-count").textContent = desainAktif.likes;
+            document.getElementById("detail-dislike-count").textContent = desainAktif.dislikes;
+            document.getElementById("meta-likes").textContent = `${desainAktif.likes} Suka`;
+
+            btnLike.classList.toggle("text-blue-400", state === "like");
+            btnLike.classList.toggle("bg-blue-500/10", state === "like");
+            btnDislike.classList.toggle("text-red-400", state === "dislike");
+            btnDislike.classList.toggle("bg-red-500/10", state === "dislike");
+        }
+
+        /**
+         * SISTEM KOMENTAR (TERSINKRON KE CLOUD)
+         */
+        async function kirimKomentar(e) {
+            e.preventDefault();
+            if (!desainAktif) return;
+
+            const namaInput = document.getElementById("comment-name");
+            const teksInput = document.getElementById("comment-text");
+            const nama = namaInput.value.trim() || "Pengunjung";
+            const teks = teksInput.value.trim();
+
+            if (!teks) return;
+
+            if (!Array.isArray(desainAktif.komentar)) desainAktif.komentar = [];
+            desainAktif.komentar.unshift({
+                nama: nama,
+                teks: teks,
+                waktu: new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
+            });
+
+            teksInput.value = "";
+            renderKomentar();
+            await simpanPerubahanDesainCloud(desainAktif);
+            tampilkanNotifikasi("Komentar berhasil disimpan!");
+        }
+
+        function renderKomentar() {
+            if (!desainAktif) return;
+            const list = document.getElementById("comments-list");
+            const title = document.getElementById("comment-count-title");
+            const komentar = desainAktif.komentar || [];
+
+            title.textContent = `${komentar.length} Komentar`;
+            list.innerHTML = "";
+
+            if (komentar.length === 0) {
+                list.innerHTML = `<p class="text-xs text-zinc-500 py-3">Belum ada komentar. Jadilah yang pertama memberikan tanggapan!</p>`;
+                return;
+            }
+
+            komentar.forEach(k => {
+                const div = document.createElement("div");
+                div.className = "bg-zinc-900/70 border border-zinc-800/80 rounded-xl p-3.5 flex items-start gap-3";
+                div.innerHTML = `
+                    <div class="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center text-xs font-bold text-blue-400 shrink-0">
+                        ${k.nama.charAt(0).toUpperCase()}
+                    </div>
+                    <div class="flex-1">
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs font-semibold text-white">${k.nama}</span>
+                            <span class="text-[11px] text-zinc-500">${k.waktu}</span>
+                        </div>
+                        <p class="text-sm text-zinc-300 mt-1">${k.teks}</p>
+                    </div>
+                `;
+                list.appendChild(div);
+            });
+        }
+
+        /**
+         * ALGORITMA REKOMENDASI OTOMATIS (FISHER-YATES SHUFFLE)
+         */
+        function renderRekomendasiOtomatis(idSedangDibuka) {
+            const container = document.getElementById("recommendations-grid");
+            container.innerHTML = "";
+
+            const kandidat = daftarDesain.filter(item => item.id !== idSedangDibuka);
+            if (kandidat.length === 0) {
+                container.innerHTML = `<p class="col-span-full text-xs text-zinc-500 py-4">Belum ada desain lainnya untuk direkomendasikan.</p>`;
+                return;
+            }
+
+            const acak = [...kandidat];
+            for (let i = acak.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [acak[i], acak[j]] = [acak[j], acak[i]];
+            }
+
+            acak.slice(0, 10).forEach(item => {
+                const imgSrc = dapatkanUrlGambarGDrive(item.driveUrl, "w800");
+                const avatarHtml = buatHtmlAvatarChannel(item.desainer, item.channelAvatarUrl);
+                const badgeVerif = buatBadgeVerifikasi(item.desainer);
+                const nomorUrut = daftarDesain.findIndex(d => d.id === item.id) + 1;
+
+                const card = document.createElement("div");
+                card.onclick = () => bukaDetailDesain(item.id);
+                card.className = "group cursor-pointer flex flex-col bg-zinc-900/50 border border-zinc-800/70 hover:border-blue-500/50 rounded-xl overflow-hidden transition-all";
+                card.innerHTML = `
+                    <div class="relative aspect-video w-full bg-zinc-950 overflow-hidden">
+                        <img src="${imgSrc}" alt="${item.judul}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                        <span class="absolute top-2 left-2 bg-black/75 text-white text-[10px] font-bold px-2 py-0.5 rounded-md">Foto #${nomorUrut}</span>
+                    </div>
+                    <div class="p-3">
+                        <h4 class="text-xs font-semibold text-white line-clamp-2 group-hover:text-blue-400 transition-colors">${item.judul}</h4>
+                        <div oncontextmenu="tampilkanMenuKlikKananChannel(event, '${item.desainer.replace(/'/g, "\\'")}')"
+                             class="mt-2 flex items-center gap-2 text-[11px] text-zinc-400 truncate">
+                            <div class="w-5 h-5 rounded-full overflow-hidden bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center text-white font-bold text-[10px] shrink-0">
+                                ${avatarHtml}
+                            </div>
+                            <span class="truncate">${item.desainer}</span>
+                            ${badgeVerif}
+                        </div>
+                        <p class="text-[10px] text-zinc-500 mt-1">${item.likes} Suka • ${item.tanggalUpload}</p>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        /**
+         * FILTER KATEGORI & PENCARIAN
+         */
+        function kembaliKeBeranda() {
+            document.getElementById('detail-view').classList.add('hidden');
+            document.getElementById('home-view').classList.remove('hidden');
+            desainAktif = null;
+            terapkanFilterDanCari();
+        }
+
+        function filterKategori(kategori) {
+            kategoriAktif = kategori;
+            document.querySelectorAll('.kategori-btn').forEach(btn => {
+                if (btn.textContent.includes(kategori) || (kategori === 'Semua' && btn.textContent.includes('Semua'))) {
+                    btn.classList.add('bg-white', 'text-black', 'font-semibold');
+                    btn.classList.remove('bg-zinc-800', 'text-zinc-200', 'font-medium');
+                } else {
+                    btn.classList.remove('bg-white', 'text-black', 'font-semibold');
+                    btn.classList.add('bg-zinc-800', 'text-zinc-200', 'font-medium');
+                }
+            });
+            terapkanFilterDanCari();
+        }
+
+        function cariDesain() {
+            terapkanFilterDanCari();
+        }
+
+        function terapkanFilterDanCari() {
+            const query = (document.getElementById('search-input')?.value || '').toLowerCase().trim();
+            const hasil = daftarDesain.filter(item => {
+                const cocokKategori = kategoriAktif === 'Semua' || item.kategori === kategoriAktif;
+                const cocokTeks = !query || 
+                    item.judul.toLowerCase().includes(query) || 
+                    item.desainer.toLowerCase().includes(query) || 
+                    (item.kategori && item.kategori.toLowerCase().includes(query));
+                return cocokKategori && cocokTeks;
+            });
+            renderGridUtama(hasil);
+        }
+
+        /**
+         * KEAMANAN PASSWORD & MODAL UPLOAD LINK GOOGLE DRIVE + CHANNEL
+         */
+        function bukaModalPassword() {
+            if (sudahTerautentikasi) {
+                bukaModalTambah();
+                return;
+            }
+            document.getElementById('password-error-msg').classList.add('hidden');
+            document.getElementById('input-upload-password').value = '';
+            const modal = document.getElementById('password-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            lucide.createIcons();
+            setTimeout(() => document.getElementById('input-upload-password').focus(), 100);
+        }
+
+        function tutupModalPassword() {
+            const modal = document.getElementById('password-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        function verifikasiPassword(e) {
+            e.preventDefault();
+            const inputPass = document.getElementById('input-upload-password').value;
+            const errorMsg = document.getElementById('password-error-msg');
+
+            if (inputPass === UPLOAD_PASSWORD) {
+                sudahTerautentikasi = true;
+                errorMsg.classList.add('hidden');
+                tutupModalPassword();
+                bukaModalTambah();
+                tampilkanNotifikasi("Akses diterima! Silakan upload desain.");
+            } else {
+                errorMsg.classList.remove('hidden');
+                document.getElementById('input-upload-password').value = '';
+                document.getElementById('input-upload-password').focus();
+            }
+        }
+
+        function bukaModalTambah() {
+            const modal = document.getElementById('add-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            cekPreviewVerifikasi();
+            lucide.createIcons();
+        }
+
+        function tutupModalTambah() {
+            const modal = document.getElementById('add-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        function cekPreviewVerifikasi() {
+            const namaChannel = document.getElementById('input-channel').value.trim();
+            const statusBadge = document.getElementById('verify-status-badge');
+            if (apakahChannelTerverifikasi(namaChannel)) {
+                statusBadge.innerHTML = `<span class="text-blue-400 font-semibold inline-flex items-center gap-1">✓ Channel Resmi Terverifikasi</span>`;
+            } else {
+                statusBadge.innerHTML = `<span class="text-zinc-400">Channel Biasa (Tidak Terverifikasi)</span>`;
+            }
+        }
+
+        async function tambahDesainBaru(e) {
+            e.preventDefault();
+            const link = document.getElementById('input-gdrive-link').value.trim();
+            const judul = document.getElementById('input-title').value.trim();
+            const channel = document.getElementById('input-channel').value.trim();
+            const channelAvatarInput = document.getElementById('input-channel-avatar').value.trim();
+            const channelAvatar = dapatkanAvatarChannel(channel, channelAvatarInput);
+            const kategori = document.getElementById('input-category').value;
+            const penyedia = document.getElementById('input-provider').value.trim() || "Google Drive Cloud";
+            const deskripsi = document.getElementById('input-desc').value.trim() || "Pratinjau desain resolusi tinggi dari Google Drive.";
+
+            const tanggalSekarang = new Date().toLocaleDateString('id-ID', {
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric'
+            });
+
+            const desainBaruData = {
+                driveUrl: link,
+                judul: judul,
+                deskripsi: deskripsi,
+                desainer: channel,
+                channelAvatarUrl: channelAvatar,
+                tanggalUpload: tanggalSekarang,
+                likes: 0,
+                dislikes: 0,
+                penyedia: penyedia,
+                kategori: kategori,
+                komentar: [],
+                createdAt: Date.now()
+            };
+
+            tutupModalTambah();
+            e.target.reset();
+
+            if (db && currentUser) {
+                try {
+                    const desainColRef = collection(db, 'artifacts', appId, 'public', 'data', 'auraphone_designs');
+                    await addDoc(desainColRef, desainBaruData);
+                } catch (err) {
+                    console.error("Gagal menyimpan ke cloud:", err);
+                    desainCloud.push({ id: "local-" + Date.now(), ...desainBaruData });
+                    gabungkanSemuaDesain();
+                }
+            } else {
+                desainCloud.push({ id: "local-" + Date.now(), ...desainBaruData });
+                gabungkanSemuaDesain();
+            }
+            
+            const searchInput = document.getElementById('search-input');
+            if (searchInput) searchInput.value = '';
+            filterKategori('Semua');
+            kembaliKeBeranda();
+
+            const statusVerif = apakahChannelTerverifikasi(channel) ? " (Channel Terverifikasi)" : "";
+            tampilkanNotifikasi(`Desain & Channel "${channel}"${statusVerif} tersimpan di semua perangkat!`);
+        }
+
+        /**
+         * UTILITAS: SALIN LINK & NOTIFIKASI TOAST
+         */
+        function salinLinkDesain() {
+            if (!desainAktif) return;
+            const dummyInput = document.createElement('input');
+            dummyInput.value = desainAktif.driveUrl;
+            document.body.appendChild(dummyInput);
+            dummyInput.select();
+            document.execCommand('copy');
+            document.body.removeChild(dummyInput);
+            tampilkanNotifikasi("Link Google Drive desain berhasil disalin!");
+        }
+
+        function tampilkanNotifikasi(pesan) {
+            const toast = document.getElementById('toast-box');
+            document.getElementById('toast-message').textContent = pesan;
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3000);
+        }
+
+        // Ekspos fungsi ke window agar event handler inline HTML selalu terhubung
+        window.kembaliKeBeranda = kembaliKeBeranda;
+        window.filterKategori = filterKategori;
+        window.cariDesain = cariDesain;
+        window.bukaModalPassword = bukaModalPassword;
+        window.tutupModalPassword = tutupModalPassword;
+        window.verifikasiPassword = verifikasiPassword;
+        window.bukaModalTambah = bukaModalTambah;
+        window.tutupModalTambah = tutupModalTambah;
+        window.cekPreviewVerifikasi = cekPreviewVerifikasi;
+        window.tambahDesainBaru = tambahDesainBaru;
+        window.bukaDetailDesain = bukaDetailDesain;
+        window.toggleDeskripsi = toggleDeskripsi;
+        window.aksiLike = aksiLike;
+        window.aksiDislike = aksiDislike;
+        window.kirimKomentar = kirimKomentar;
+        window.salinLinkDesain = salinLinkDesain;
+        window.tampilkanMenuKlikKananChannel = tampilkanMenuKlikKananChannel;
+        window.bukaModalHapusChannel = bukaModalHapusChannel;
+        window.tutupModalHapusChannel = tutupModalHapusChannel;
+        window.konfirmasiHapusChannel = konfirmasiHapusChannel;
+    </script>
+</body>
+</html>
